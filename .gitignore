@@ -1,9 +1,2 @@
-.DS_Store
-bin/*
-node_modules/*
-obj/*
-*.csproj
-*.csproj.user
-*.sln
-*.suo
-.idea/*
+*.sublime-*
+node_modules/
