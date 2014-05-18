@@ -76702,7 +76702,7 @@ function create() {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-
+    tileSelector = game.add.sprite(-1, -1, 'tileSelector');
     player.create();
     
 
@@ -76713,8 +76713,7 @@ function create() {
 
     game.physics.enable(walls, Phaser.Physics.ARCADE);
 
-    tileSelector = game.add.sprite(-1, -1, 'tileSelector');
-    console.log(tileSelector);
+    
 
     showLayersKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     showLayersKey.onDown.add(function() {
