@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="80" height="60" tilewidth="24" tileheight="24" backgroundcolor="#000000">
+ <tileset firstgid="1" name="tileset" tilewidth="24" tileheight="24" spacing="1" margin="1">
+  <image source="../tiles/tileset.png" width="200" height="200"/>
+ </tileset>
+ <tileset firstgid="65" name="dynamic" tilewidth="24" tileheight="24" spacing="1" margin="1">
+  <image source="../tiles/dynamic.png" width="200" height="200"/>
+ </tileset>
+ <layer name="ground" width="80" height="60">
+  <data encoding="base64" compression="zlib">
+   eJzt1zsOgCAQQMGlNN7/vjZWFhS4kY07xZSQ8MInjIgYAABwOxLsXsPufucL+uX067qPM/utjtdPP/1q9nvecfrN+3g/9Pu632we59f7oZ9+Vfm/1ejXVdd9AwAAAAAAAAAAAADwNxd9MyQV
+  </data>
+ </layer>
+ <layer name="walls" width="80" height="60">
+  <data encoding="base64" compression="zlib">
+   eJzt1esKgkAQBlDpClIEXd//TVMQClkhW2nWPAc+9s8EX8OAVQUAAC+rJutEtm8zu4GZNptfli3QIfj3czfV/obu+NPM9Y6n2l8d3COK/eWxvzy5vffdewzuEaWU3qX0GKuU3qX0GCu396l7b8E9ovh+5Mn933Xv/Zb95Vn6/s5NLr3cE/OPxFyba2aPKFPtb6lSdzMmc70bAAAAAAAAAAAAAIB/8wQjSwSj
+  </data>
+ </layer>
+ <layer name="dynamic" width="80" height="60">
+  <data encoding="base64" compression="zlib">
+   eJzt0EENACAMBMFaq39TOOjnIIQwo2CzVQAAALBH3w54nH8Z/zL+zbrmR/7N/DvLv4x/Gf8y/gEAAAAAAAAAAAAAAD9b6K0Djw==
+  </data>
+ </layer>
+</map>
