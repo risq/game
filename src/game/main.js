@@ -29,6 +29,8 @@ var tileSelector;
 
 var toDebug;
 
+var foundTile_debug;
+
 function create() {
     map = game.add.tilemap('map1');
     map.addTilesetImage('tileset', 'tileset');
@@ -82,24 +84,26 @@ function update() {
         selectedY;
 
 
-    if (this.game.physics.arcade.distanceToXY(player.sprite, game.input.worldX, game.input.worldY) < 72) 
+    var hoveredTile = map.getTileWorldXY(game.input.worldX, game.input.worldY),
+    	hoveredTileWorldXCenter = hoveredTile.worldX + hoveredTile.centerX,
+    	hoveredTileWorldYCenter = hoveredTile.worldY + hoveredTile.centerY;
+    if (this.game.physics.arcade.distanceToXY(player.sprite, hoveredTileWorldXCenter, hoveredTileWorldYCenter) < 72) 
     {
-        ray = new Phaser.Line(player.sprite.x, player.sprite.y, game.input.worldX, game.input.worldY);
+        ray = new Phaser.Line(player.sprite.x, player.sprite.y, hoveredTileWorldXCenter, hoveredTileWorldYCenter);
         var wallsCheck = walls.getRayCastTiles(ray, 1, true, false);
         if (wallsCheck.length === 0)
         {
             var objectsCheck = dynamics.getRayCastTiles(ray, 1, true, false);
             if (objectsCheck.length === 0)
             {
-                var selectedTile = map.getTileWorldXY(game.input.worldX, game.input.worldY, 24, 24, ground);
-                selectedX = selectedTile.worldX;
-                selectedY = selectedTile.worldY;
+                selectedX = hoveredTile.worldX;
+                selectedY = hoveredTile.worldY;
                 foundTile = true;
             }
         }
     }
-    if (!foundTile) 
-    {
+    if (!foundTile) {
+
         ray = new Phaser.Line(player.sprite.x, player.sprite.y, game.input.worldX, game.input.worldY);
         var tileHits = dynamics.getRayCastTiles(ray, 1, true, false);
         if (tileHits.length > 0)
@@ -138,6 +142,7 @@ function update() {
     else {
         tileSelector.visible = false;
     }
+    foundTile_debug = foundTile;
 }
 
 function render() {
@@ -147,7 +152,12 @@ function render() {
         game.debug.body(player.sprite);
         game.debug.body(dynamics);
         game.debug.body(walls);
-        game.debug.geom(ray);
+
+        if (foundTile_debug)
+        	game.debug.geom(ray, 'green');
+        else 
+        	game.debug.geom(ray, 'red');
+        
 
     }
 }
