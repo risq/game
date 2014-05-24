@@ -20,8 +20,11 @@ Player.prototype = {
     },
  
     create: function () {
-        this.sprite = this.game.add.sprite(200, 200, 'player');
+        this.sprite = this.game.add.sprite(100, 100, 'player');
 	    this.sprite.anchor.set(0.5);
+
+	    this.game.physics.enable(this.sprite);
+	    this.sprite.body.setSize(22, 22, 0, 0);
 
 	    this.walkAnim = this.sprite.animations.add('walk');
 
@@ -29,10 +32,11 @@ Player.prototype = {
 	    this.downKey  = game.input.keyboard.addKey(Phaser.Keyboard.S);
 	    this.leftKey  = game.input.keyboard.addKey(Phaser.Keyboard.Q);
 	    this.rightKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+
+	    this.game.camera.follow(this.sprite);
     },
  
     update: function() {
- 
         var velX   = 0,
 	        velY   = 0,
 	        moving = false;
@@ -84,8 +88,8 @@ Player.prototype = {
 	    }
 	    else if (!moving) {
 	        this.walkAnim.stop();
-	    }
-	    
+	    }    
+	    this.sprite.bringToTop();
     }
  
 };

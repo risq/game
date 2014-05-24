@@ -2,162 +2,103 @@
 var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
 
 function preload() {
-    game.load.tilemap('map1', 'assets/tilemaps/map1.json', null, Phaser.Tilemap.TILED_JSON);
-    game.load.image('tileset', 'assets/tiles/tileset.png');
-    game.load.image('dynamic', 'assets/tiles/dynamic.png');
-    game.load.image('tileSelector', 'assets/sprites/tileSelector.png');
+    
     player = new Player(game);
     player.preload();
+
+    mapManager = new MapManager(game);
+    mapManager.preload();
+
+    weaponsManager = new WeaponsManager(game);
+    weaponsManager.preload();
+
+    aimManager = new AimManager(game, player, mapManager, weaponsManager);
+    aimManager.preload();
+
 }
 
-var map;
-var ground;
-var walls;
-var dynamics;
+
 var debugMode;
 
 var cursors;
-var showLayersKey;
+var debugKey;
 var groundKey;
 var wallsKey;
 var layer3Key;
 
 var walkAnim;
 
-var ray;
 var tileSelector;
 
 var toDebug;
 
 var foundTile_debug;
 
+
+
+//counters
+var updateAiming_counter = {count: 0};
+
+
+
 function create() {
-    map = game.add.tilemap('map1');
-    map.addTilesetImage('tileset', 'tileset');
-    
 
-    ground = map.createLayer('ground');
-    ground.resizeWorld();
+    mapManager.create();
+    player.create();
+    aimManager.create();
+    weaponsManager.create();
 
-    walls = map.createLayer('walls');
+    dynamicTilesManager = new DynamicTilesManager(game, mapManager.map, mapManager.dynamics);
+    dynamicTilesManager.create();
     
-    map.addTilesetImage('dynamic', 'dynamic');
-    dynamics = map.createLayer('dynamic');
-    map.setCollisionBetween(65, 128, true, dynamics);
-    map.setCollisionBetween(0, 64, true, walls);
-    
-    dynamicTilesManager = new DynamicTilesManager(game, map, dynamics);
-
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    tileSelector = game.add.sprite(-1, -1, 'tileSelector');
-    player.create();
-    
-
-    game.camera.follow(player.sprite);
-
-    game.physics.enable(player.sprite, Phaser.Physics.ARCADE);
-    player.sprite.body.setSize(22, 22, 0, 0);
-
-    game.physics.enable(walls, Phaser.Physics.ARCADE);
-
-    
-
-    showLayersKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-    showLayersKey.onDown.add(function() {
+    debugKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    debugKey.onDown.add(function() {
         debugMode = !debugMode;
     }, this);
+
+    game.input.onDown.add(function() {
+        aimManager.click();
+    });
 
 }
 
 
 function update() {
-    player.update();
-    this.game.physics.arcade.collide(player.sprite, walls, function() {
+    
+    game.physics.arcade.collide(player.sprite, mapManager.walls, function() {
     });
-    this.game.physics.arcade.collide(player.sprite, dynamics, function(player, tile) {
+    game.physics.arcade.collide(player.sprite, mapManager.dynamics, function(player, tile) {
         //tile.debug = true;
     });
-
-    var foundTile = false,
-        selectedX,
-        selectedY;
+    player.update();
 
 
-    var hoveredTile = map.getTileWorldXY(game.input.worldX, game.input.worldY),
-    	hoveredTileWorldXCenter = hoveredTile.worldX + hoveredTile.centerX,
-    	hoveredTileWorldYCenter = hoveredTile.worldY + hoveredTile.centerY;
-    if (this.game.physics.arcade.distanceToXY(player.sprite, hoveredTileWorldXCenter, hoveredTileWorldYCenter) < 72) 
-    {
-        ray = new Phaser.Line(player.sprite.x, player.sprite.y, hoveredTileWorldXCenter, hoveredTileWorldYCenter);
-        var wallsCheck = walls.getRayCastTiles(ray, 1, true, false);
-        if (wallsCheck.length === 0)
-        {
-            var objectsCheck = dynamics.getRayCastTiles(ray, 1, true, false);
-            if (objectsCheck.length === 0)
-            {
-                selectedX = hoveredTile.worldX;
-                selectedY = hoveredTile.worldY;
-                foundTile = true;
-            }
-        }
-    }
-    if (!foundTile) {
+    oneInNFrame(2, updateAiming_counter, function() {
+        aimManager.updateAiming(player, mapManager);
+    });
 
-        ray = new Phaser.Line(player.sprite.x, player.sprite.y, game.input.worldX, game.input.worldY);
-        var tileHits = dynamics.getRayCastTiles(ray, 1, true, false);
-        if (tileHits.length > 0)
-        {
-            var closest;
-            var closestDistance = 999999999;
-
-            for (var i = 0; i < tileHits.length; i++)
-            {
-                ray.setTo(player.sprite.x, player.sprite.y, tileHits[i].worldX + tileHits[i].centerX, tileHits[i].worldY + tileHits[i].centerY); 
-                var tileDistance = ray.length;
-                if (tileDistance < 72 && tileDistance < closestDistance) {
-                    var wallsCheck = walls.getRayCastTiles(ray, 1, true, false);
-                    if (wallsCheck.length === 0)
-                    {
-                        closest = tileHits[i];
-                        closestDistance = tileDistance;
-                        //console.log('VALID - tileDistance (i = '+ i +') :' + tileDistance);
-
-                    }
-                }
-            }
-            if (closest) {
-                selectedX = closest.worldX;
-                selectedY = closest.worldY;
-                foundTile = true;
-            }
-            
-        }
-    }
-    if (foundTile) {
-        tileSelector.visible = true;
-        tileSelector.x = selectedX;
-        tileSelector.y = selectedY;
-    }
-    else {
-        tileSelector.visible = false;
-    }
-    foundTile_debug = foundTile;
+    
 }
 
 function render() {
     if (debugMode) {
-        game.debug.text(toDebug, 700, 500);
+        game.debug.text(toDebug, 600, 550);
         game.debug.bodyInfo(player.sprite, 32, 32);
         game.debug.body(player.sprite);
-        game.debug.body(dynamics);
-        game.debug.body(walls);
+        //game.debug.body(mapManager.dynamics);
+        //game.debug.body(mapManager.walls);
 
-        if (foundTile_debug)
-        	game.debug.geom(ray, 'green');
+        if (aimManager.isFoundTile)
+        	game.debug.geom(aimManager.ray, 'green');
         else 
-        	game.debug.geom(ray, 'red');
-        
+        	game.debug.geom(aimManager.ray, 'red');
+
+        if (aimManager.aimedDynamicTile)
+            game.debug.text(aimManager.aimedDynamicTile.dynamicTile.name, 600, 500);
+        else if (aimManager.isFoundTile)
+            game.debug.text('ground', 600, 500);
 
     }
 }

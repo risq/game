@@ -1,0 +1,14 @@
+[
+	{
+		"name": "dynamite",
+		"tileIndex": 0,
+		"instanUse": false,
+		"useTime" : 3000
+	},
+	{
+		"name": "test",
+		"tileIndex": 1,
+		"instanUse": false,
+		"useTime" : 0
+	}
+]
