@@ -3,7 +3,7 @@ WeaponsManager = function(game, mapManager) {
     this.game = game;
     this.mapManager = mapManager;
 
-    this.items= null;
+    this.items = null;
     this.itemUseList = [];
 
     this.currentItem = null;
@@ -14,7 +14,7 @@ WeaponsManager.prototype = {
  
     preload: function () {
     	this.game.load.spritesheet('items', 'assets/tiles/items.png', 24, 24, 64, 1, 1);
-        this.game.load.json('items_json', 'assets/json/items.json');
+        this.game.load.json('items_json', 'assets/datas/items.json');
         game.load.spritesheet('explosion', 'assets/tiles/explosion.png', 24, 24, 16, 1, 1);
     },
  

@@ -1,0 +1,8 @@
+[
+	{
+		"name": 				"safe",
+		"tileIndex": 			65,
+		"brokenTileIndex": 		66,
+		"aimable": 				true
+	}
+]

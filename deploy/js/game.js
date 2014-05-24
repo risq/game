@@ -76663,25 +76663,54 @@ AimManager.prototype = {
     },
  
 };
-DynamicTile = function(tile) {
-	this.tile = tile;
-
-    if (this.tile) {
-    	this.init();
-    }
+DynamicTile = function(params) {
+	this.params = params;
 };
  
 DynamicTile.prototype = {
-	init: function () {
-
-	},
 	isAimable: function () {
-        return (this.aimable !== false);
+        return (this.params.aimable !== false);
+    }
+};
+DynamicTilesManager = function(game, mapManager) {
+ 
+    this.game = game;
+    this.mapManager = mapManager;
+
+	this.dynamicTiles = null;
+
+};
+ 
+DynamicTilesManager.prototype = {
+    preload: function () {
+        this.game.load.json('dynamicTiles_json', 'assets/datas/dynamicTiles.json');
+    }, 
+ 
+    create: function () {
+        this.dynamicTiles = this.game.cache.getJSON('dynamicTiles_json');
+
+        var tiles = this.mapManager.dynamics.getTiles(0,0, this.mapManager.map.heightInPixels, this.mapManager.map.widthInPixels);
+        for (var j = tiles.length - 1; j >= 0; j--) {
+            if (tiles[j].index > -1)
+                tiles[j].dynamicTile = this.constructDynamicTile(tiles[j].index);
+        }
+    },
+
+    constructDynamicTile: function (tileIndex) {
+        return new DynamicTile(this.getDynamicTileParams(tileIndex));
+    },
+
+    getDynamicTileParams: function (tileIndex) {
+        for(var i = 0 ; i < this.dynamicTiles.length ; i++){
+            if(this.dynamicTiles[i].tileIndex == tileIndex){
+                return this.dynamicTiles[i]; 
+            }  
+        }
+        return null;
     }
 };
 Item = function(params) {
 	this.params = params;
-
 	this.timeout = null;
 };
  
@@ -76699,7 +76728,6 @@ Item.prototype = {
 		}
 	},
 	launchAction: function (game, mapManager, tile, sprite) {
-		console.trace();
 		var emitter = game.add.emitter(tile.worldX, tile.worldY, 250);
 
 	    emitter.makeParticles('explosion', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
@@ -76716,7 +76744,7 @@ Item.prototype = {
 	    var brokenTileIndex;
 	    if (typeof(tile.dynamicTile) !== 'undefined') {
 	    	console.log (tile.dynamicTile);
-			mapManager.map.putTile(tile.dynamicTile.brokenTileIndex, tile.x, tile.y, mapManager.dynamics);
+			mapManager.map.putTile(tile.dynamicTile.params.brokenTileIndex, tile.x, tile.y, mapManager.dynamics);
 	    }
 	    else {
 	    	mapManager.map.putTile(17, tile.x, tile.y, mapManager.ground);
@@ -76725,69 +76753,6 @@ Item.prototype = {
 		sprite.kill();
 	}
 };
-Safe = function(tile) {
-    DynamicTile.call(this, tile);
-
-    //constants
-    this.name = 'safe';
-    this.tileIndex = 65;
-    this.brokenTileIndex = 66;
-    
-    this.type = 'openable';
-    this.hp = 100;
-
-
-    this.aimable = true;
-    this.containItems = true;
-};
-                        
-Safe.prototype = new DynamicTile();
-Safe.prototype.constructor = Safe;
-DynamicTilesManager = function(game, map, layer) {
- 
-    this.game = game;
-    this.map = map;
-    this.layer = layer;
-
-	
-    //console.log(tiles.length);
-};
- 
-DynamicTilesManager.prototype = {
-    preload: function () {
-        
-    }, 
- 
-    create: function () {
-        var tiles = this.layer.getTiles(0,0, this.map.heightInPixels, this.map.widthInPixels);
-        for (var j = tiles.length - 1; j >= 0; j--) {
-            if (tiles[j].index > -1)
-                tiles[j].dynamicTile = this.constructDynamicTile(tiles[j]);
-        }
-    },
-
-    constructDynamicTile: function (tile) {
-        var dynamicTile;
-        switch (tile.index) {
-            case 65:
-                dynamicTile = new Safe(tile);
-            break;
-
-        }
-        return dynamicTile;
-    } 
-};
-Item_Dynamite = function() {
-    Item.call(this);
-
-    //constants
-    this.name = 'dynamite';
-    this.tileIndex = 0;
-
-};
-                        
-Item_Dynamite.prototype = new Item();
-Item_Dynamite.prototype.constructor = Item_Dynamite;
 MapManager = function(game) {
  
     this.game = game;
@@ -76930,7 +76895,7 @@ WeaponsManager = function(game, mapManager) {
     this.game = game;
     this.mapManager = mapManager;
 
-    this.items= null;
+    this.items = null;
     this.itemUseList = [];
 
     this.currentItem = null;
@@ -76941,7 +76906,7 @@ WeaponsManager.prototype = {
  
     preload: function () {
     	this.game.load.spritesheet('items', 'assets/tiles/items.png', 24, 24, 64, 1, 1);
-        this.game.load.json('items_json', 'assets/json/items.json');
+        this.game.load.json('items_json', 'assets/datas/items.json');
         game.load.spritesheet('explosion', 'assets/tiles/explosion.png', 24, 24, 16, 1, 1);
     },
  
@@ -76991,6 +76956,8 @@ function preload() {
     aimManager = new AimManager(game, player, mapManager, weaponsManager);
     aimManager.preload();
 
+    dynamicTilesManager = new DynamicTilesManager(game, mapManager);
+    dynamicTilesManager.preload();
 }
 
 
@@ -77023,9 +76990,8 @@ function create() {
     player.create();
     aimManager.create();
     weaponsManager.create();
-
-    dynamicTilesManager = new DynamicTilesManager(game, mapManager.map, mapManager.dynamics);
     dynamicTilesManager.create();
+    
     
     game.physics.startSystem(Phaser.Physics.ARCADE);
 

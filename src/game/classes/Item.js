@@ -1,6 +1,5 @@
 Item = function(params) {
 	this.params = params;
-
 	this.timeout = null;
 };
  
@@ -18,7 +17,6 @@ Item.prototype = {
 		}
 	},
 	launchAction: function (game, mapManager, tile, sprite) {
-		console.trace();
 		var emitter = game.add.emitter(tile.worldX, tile.worldY, 250);
 
 	    emitter.makeParticles('explosion', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
@@ -35,7 +33,7 @@ Item.prototype = {
 	    var brokenTileIndex;
 	    if (typeof(tile.dynamicTile) !== 'undefined') {
 	    	console.log (tile.dynamicTile);
-			mapManager.map.putTile(tile.dynamicTile.brokenTileIndex, tile.x, tile.y, mapManager.dynamics);
+			mapManager.map.putTile(tile.dynamicTile.params.brokenTileIndex, tile.x, tile.y, mapManager.dynamics);
 	    }
 	    else {
 	    	mapManager.map.putTile(17, tile.x, tile.y, mapManager.ground);

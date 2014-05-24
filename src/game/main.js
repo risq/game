@@ -15,6 +15,8 @@ function preload() {
     aimManager = new AimManager(game, player, mapManager, weaponsManager);
     aimManager.preload();
 
+    dynamicTilesManager = new DynamicTilesManager(game, mapManager);
+    dynamicTilesManager.preload();
 }
 
 
@@ -47,9 +49,8 @@ function create() {
     player.create();
     aimManager.create();
     weaponsManager.create();
-
-    dynamicTilesManager = new DynamicTilesManager(game, mapManager.map, mapManager.dynamics);
     dynamicTilesManager.create();
+    
     
     game.physics.startSystem(Phaser.Physics.ARCADE);
 

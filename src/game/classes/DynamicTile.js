@@ -1,16 +1,9 @@
-DynamicTile = function(tile) {
-	this.tile = tile;
-
-    if (this.tile) {
-    	this.init();
-    }
+DynamicTile = function(params) {
+	this.params = params;
 };
  
 DynamicTile.prototype = {
-	init: function () {
-
-	},
 	isAimable: function () {
-        return (this.aimable !== false);
+        return (this.params.aimable !== false);
     }
 };
