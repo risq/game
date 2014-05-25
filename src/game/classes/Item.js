@@ -24,9 +24,9 @@ Item.prototype = {
 	    emitter.minParticleSpeed.setTo(-50, -50);
 	    emitter.maxParticleSpeed.setTo(50, 50);
 	    emitter.minParticleScale = 0.1;
-	    emitter.maxParticleScale = 4;
+	    emitter.maxParticleScale = 2;
 	    emitter.minParticleAlpha = 0.1;
-	    emitter.maxParticleAlpha = 0.8;
+	    emitter.maxParticleAlpha = 0.6;
 	    emitter.gravity = 0;
 	    emitter.start(false, 2000, 0, 80);
 

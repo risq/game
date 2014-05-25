@@ -76735,9 +76735,9 @@ Item.prototype = {
 	    emitter.minParticleSpeed.setTo(-50, -50);
 	    emitter.maxParticleSpeed.setTo(50, 50);
 	    emitter.minParticleScale = 0.1;
-	    emitter.maxParticleScale = 4;
+	    emitter.maxParticleScale = 2;
 	    emitter.minParticleAlpha = 0.1;
-	    emitter.maxParticleAlpha = 0.8;
+	    emitter.maxParticleAlpha = 0.6;
 	    emitter.gravity = 0;
 	    emitter.start(false, 2000, 0, 80);
 
@@ -76907,7 +76907,7 @@ WeaponsManager.prototype = {
     preload: function () {
     	this.game.load.spritesheet('items', 'assets/tiles/items.png', 24, 24, 64, 1, 1);
         this.game.load.json('items_json', 'assets/datas/items.json');
-        game.load.spritesheet('explosion', 'assets/tiles/explosion.png', 24, 24, 16, 1, 1);
+        game.load.spritesheet('explosion', 'assets/tiles/explosion.png', 48, 48, 16, 1, 1);
     },
  
     create: function () {
