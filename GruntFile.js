@@ -3,6 +3,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-open');
     grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-node-webkit-builder');
+    grunt.loadNpmTasks('grunt-exec');
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -26,13 +28,29 @@ module.exports = function (grunt) {
             files: 'src/**/*.js',
             tasks: ['concat']
         },
+        nodewebkit: {
+            options: {
+                build_dir: './build',
+                mac: false,
+                win: true,
+                linux32: false,
+                linux64: false
+            },
+            src: ['./deploy/**/*']
+        },
         open: {
             dev: {
                 path: 'http://localhost:8080/index.html'
+            }
+        },
+        exec: {
+            runWin : {
+                cmd: 'build\\releases\\game\\win\\game\\game.exe'
             }
         }
     });
 
     grunt.registerTask('default', ['concat', 'connect', 'open', 'watch']);
+    grunt.registerTask('build', ['concat', 'nodewebkit', 'exec:runWin']);
 
-}
+};
