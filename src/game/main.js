@@ -1,10 +1,11 @@
 // var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update, render: render });
 var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
 
+
 function preload() {
     
-    player = new Player(game);
-    player.preload();
+    playerManager = new PlayerManager(game);
+    playerManager.preload();
 
     mapManager = new MapManager(game);
     mapManager.preload();
@@ -12,11 +13,22 @@ function preload() {
     weaponsManager = new WeaponsManager(game);
     weaponsManager.preload();
 
-    aimManager = new AimManager(game, player, mapManager, weaponsManager);
+    aimManager = new AimManager(game);
     aimManager.preload();
 
-    dynamicTilesManager = new DynamicTilesManager(game, mapManager);
+    dynamicTilesManager = new DynamicTilesManager(game);
     dynamicTilesManager.preload();
+
+    cameraManager = new CameraManager(game);
+    cameraManager.preload();
+
+    game.playerManager       = playerManager;
+    game.mapManager          = mapManager;
+    game.weaponsManager      = weaponsManager;
+    game.aimManager          = aimManager;
+    game.dynamicTilesManager = dynamicTilesManager;
+    game.cameraManager       = cameraManager;
+
 }
 
 
@@ -46,11 +58,11 @@ var updateAiming_counter = {count: 0};
 function create() {
 
     mapManager.create();
-    player.create();
+    playerManager.create();
     aimManager.create();
     weaponsManager.create();
     dynamicTilesManager.create();
-    
+    cameraManager.create();
     
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -68,17 +80,21 @@ function create() {
 
 function update() {
     
-    game.physics.arcade.collide(player.sprite, mapManager.walls, function() {
+    game.physics.arcade.collide(playerManager.sprite, mapManager.walls, function() {
     });
-    game.physics.arcade.collide(player.sprite, mapManager.dynamics, function(player, tile) {
+    game.physics.arcade.collide(playerManager.sprite, mapManager.dynamics, function(playerManager, tile) {
         //tile.debug = true;
     });
-    player.update();
+    playerManager.update();
 
 
     oneInNFrame(2, updateAiming_counter, function() {
-        aimManager.updateAiming(player, mapManager);
+        aimManager.updateAiming(playerManager, mapManager);
     });
+
+    cameraManager.update();
+
+
 
     
 }
@@ -86,8 +102,8 @@ function update() {
 function render() {
     if (debugMode) {
         game.debug.text(toDebug, 600, 550);
-        game.debug.bodyInfo(player.sprite, 32, 32);
-        game.debug.body(player.sprite);
+        game.debug.bodyInfo(playerManager.sprite, 32, 32);
+        game.debug.body(playerManager.sprite);
         //game.debug.body(mapManager.dynamics);
         //game.debug.body(mapManager.walls);
 

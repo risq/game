@@ -3,12 +3,18 @@
 		"name": "dynamite",
 		"tileIndex": 0,
 		"instanUse": false,
-		"useTime" : 3000
+		"useTime": 3000,
+		"explodes": true,
+		"explosionSprite": "groundExplosion",
+		"shakeOnExplode": true
 	},
 	{
 		"name": "test",
 		"tileIndex": 1,
 		"instanUse": false,
-		"useTime" : 0
+		"useTime" : 0,
+		"explodes": false,
+		"explosionSprite": false,
+		"shakeOnExplode": false
 	}
 ]

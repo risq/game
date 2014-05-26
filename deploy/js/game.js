@@ -76531,12 +76531,9 @@ Phaser.Physics.P2.RevoluteConstraint = function (world, bodyA, pivotA, bodyB, pi
 
 Phaser.Physics.P2.RevoluteConstraint.prototype = Object.create(p2.RevoluteConstraint.prototype);
 Phaser.Physics.P2.RevoluteConstraint.prototype.constructor = Phaser.Physics.P2.RevoluteConstraint;
-AimManager = function(game, player, mapManager, weaponManager) {
+AimManager = function(game) {
  
     this.game = game;
-    this.player = player;
-    this.mapManager = mapManager;
-    this.weaponManager = weaponManager;
 
     this.isFoundTile = false;
     this.aimedDynamicTile  = false;
@@ -76571,7 +76568,7 @@ AimManager.prototype = {
             wallsBlocking = false;
 
         
-        this.hoveredTile = this.mapManager.map.getTileWorldXY(game.input.worldX, game.input.worldY);
+        this.hoveredTile = this.game.mapManager.map.getTileWorldXY(game.input.worldX, game.input.worldY);
         this.hoveredTileWorldXCenter = this.hoveredTile.worldX + this.hoveredTile.centerX;
         this.hoveredTileWorldYCenter = this.hoveredTile.worldY + this.hoveredTile.centerY;
 
@@ -76579,7 +76576,7 @@ AimManager.prototype = {
         {
             if (this.checkWallsRayCast())
             {
-                var dynamicsHits = this.mapManager.dynamics.getRayCastTiles(this.ray, 1, true, false);
+                var dynamicsHits = this.game.mapManager.dynamics.getRayCastTiles(this.ray, 1, true, false);
                 if (dynamicsHits.length === 0)
                 {
                     //close ground tile aimed
@@ -76620,26 +76617,26 @@ AimManager.prototype = {
     click: function() {
         if (this.isFoundTile) {
             if (this.aimedDynamicTile) {
-                this.weaponManager.useItemOnDynamicTile(this.aimedTile);
+                this.game.weaponsManager.useItemOnDynamicTile(this.aimedTile);
             }
             else {
-                this.weaponManager.useItemOnGroundTile(this.aimedTile);
+                this.game.weaponsManager.useItemOnGroundTile(this.aimedTile);
             }
         }
     },
 
     hoveredTileCloseEnough: function() {
-        return this.game.physics.arcade.distanceToXY(this.player.sprite, this.hoveredTileWorldXCenter, this.hoveredTileWorldYCenter) < this.useRadius;
+        return this.game.physics.arcade.distanceToXY(this.game.playerManager.sprite, this.hoveredTileWorldXCenter, this.hoveredTileWorldYCenter) < this.useRadius;
     },
 
     checkWallsRayCast: function() {
-        this.ray = new Phaser.Line(this.player.sprite.x, this.player.sprite.y, this.hoveredTileWorldXCenter, this.hoveredTileWorldYCenter);
-        return (this.mapManager.walls.getRayCastTiles(this.ray, 1, true, false).length === 0);
+        this.ray = new Phaser.Line(this.game.playerManager.sprite.x, this.game.playerManager.sprite.y, this.hoveredTileWorldXCenter, this.hoveredTileWorldYCenter);
+        return (this.game.mapManager.walls.getRayCastTiles(this.ray, 1, true, false).length === 0);
     },
 
     getDynamicRayCast: function() {
-        this.ray = new Phaser.Line(this.player.sprite.x, this.player.sprite.y, game.input.worldX, game.input.worldY);
-        return this.mapManager.dynamics.getRayCastTiles(this.ray, 1, true, false);
+        this.ray = new Phaser.Line(this.game.playerManager.sprite.x, this.game.playerManager.sprite.y, game.input.worldX, game.input.worldY);
+        return this.game.mapManager.dynamics.getRayCastTiles(this.ray, 1, true, false);
     },
 
     getClosestTile: function(dynamicTilesHitsList) {
@@ -76648,10 +76645,10 @@ AimManager.prototype = {
 
         for (var i = 0; i < dynamicTilesHitsList.length; i++)
         {
-            this.ray.setTo(this.player.sprite.x, this.player.sprite.y, dynamicTilesHitsList[i].worldX + dynamicTilesHitsList[i].centerX, dynamicTilesHitsList[i].worldY + dynamicTilesHitsList[i].centerY); 
+            this.ray.setTo(this.game.playerManager.sprite.x, this.game.playerManager.sprite.y, dynamicTilesHitsList[i].worldX + dynamicTilesHitsList[i].centerX, dynamicTilesHitsList[i].worldY + dynamicTilesHitsList[i].centerY); 
             var tileDistance = this.ray.length;
             if (tileDistance < this.useRadius && tileDistance < closestDistance) {
-                var walls2ndCheck = this.mapManager.walls.getRayCastTiles(this.ray, 1, true, false);
+                var walls2ndCheck = this.game.mapManager.walls.getRayCastTiles(this.ray, 1, true, false);
                 if (walls2ndCheck.length === 0)
                 {
                     closest = dynamicTilesHitsList[i];
@@ -76663,6 +76660,46 @@ AimManager.prototype = {
     },
  
 };
+CameraManager = function(game) {
+ 
+    this.game = game;
+
+    this.shakeWorld = 0;
+    this.shakeWorldMax = 10;
+    this.shakeWorldTime = 0;
+    this.shakeWorldTimeMax = 25;
+};
+ 
+CameraManager.prototype = {
+ 
+    preload: function () {
+
+    },
+ 
+    create: function () {
+	    this.game.camera.follow(this.game.playerManager.sprite);
+    },
+ 
+    update: function() {
+        if (this.shakeWorldTime > 0) {
+            var magnitude = ( this.shakeWorldTime / this.shakeWorldTimeMax ) * this.shakeWorldMax;
+            var rand1 = this.game.rnd.integerInRange(-magnitude,magnitude);
+            var rand2 = this.game.rnd.integerInRange(-magnitude,magnitude);
+            this.game.world.setBounds(rand1, rand2, this.game.width + rand1, this.game.height + rand2);
+            this.shakeWorldTime--;
+            if (this.shakeWorldTime <= 0) {
+                this.game.world.setBounds(0, 0, this.game.width,this.game.height);
+                this.game.camera.setBoundsToWorld();
+                this.game.camera.follow(this.game.playerManager.sprite);
+            }
+        }
+    },
+
+    shake: function() {
+        //todo: fix camera not following after shake
+        //this.shakeWorldTime = this.shakeWorldTimeMax;
+    }
+};
 DynamicTile = function(params) {
 	this.params = params;
 };
@@ -76672,10 +76709,9 @@ DynamicTile.prototype = {
         return (this.params.aimable !== false);
     }
 };
-DynamicTilesManager = function(game, mapManager) {
+DynamicTilesManager = function(game) {
  
     this.game = game;
-    this.mapManager = mapManager;
 
 	this.dynamicTiles = null;
 
@@ -76689,7 +76725,7 @@ DynamicTilesManager.prototype = {
     create: function () {
         this.dynamicTiles = this.game.cache.getJSON('dynamicTiles_json');
 
-        var tiles = this.mapManager.dynamics.getTiles(0,0, this.mapManager.map.heightInPixels, this.mapManager.map.widthInPixels);
+        var tiles = this.game.mapManager.dynamics.getTiles(0,0, this.game.mapManager.map.heightInPixels, this.game.mapManager.map.widthInPixels);
         for (var j = tiles.length - 1; j >= 0; j--) {
             if (tiles[j].index > -1)
                 tiles[j].dynamicTile = this.constructDynamicTile(tiles[j].index);
@@ -76712,44 +76748,65 @@ DynamicTilesManager.prototype = {
 Item = function(params) {
 	this.params = params;
 	this.timeout = null;
+
+	this.explosionEmitter = null;
 };
  
 Item.prototype = {
-	useItem: function (game, mapManager, tile) {
+	useItem: function (game, tile) {
 		var sprite = game.add.sprite(tile.worldX, tile.worldY, 'items', this.params.tileIndex);
+		game.mapManager.usedItemsGroup.add(sprite);
 		if (!this.params.instantUse && (this.params.useTime > 0)) {
 			var self = this;
 			this.timeout = setTimeout(function() {
-				self.launchAction(game, mapManager, tile, sprite);
+				self.launchAction(game, tile, sprite);
 			}, this.params.useTime);
 		}
 		else {
 			this.launchAction();
 		}
 	},
-	launchAction: function (game, mapManager, tile, sprite) {
-		var emitter = game.add.emitter(tile.worldX, tile.worldY, 250);
+	launchAction: function (game, tile, sprite) {
+		if (this.params.explodes) {
+			var emitter = game.add.emitter(tile.worldX, tile.worldY, 250);
+			game.mapManager.effectsGroup.add(emitter);
+		    emitter.minParticleSpeed.setTo(-50, -50);
+		    emitter.maxParticleSpeed.setTo(50, 50);
+		    emitter.minParticleScale = 0.1;
+		    emitter.maxParticleScale = 2;
+		    emitter.minParticleAlpha = 0.1;
+		    emitter.maxParticleAlpha = 0.6;
+		    emitter.gravity = 0;
+		    emitter.start(false, 2000, 0, 80);
+		    emitter.makeParticles('explosion', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+		}
 
-	    emitter.makeParticles('explosion', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
-
-	    emitter.minParticleSpeed.setTo(-50, -50);
-	    emitter.maxParticleSpeed.setTo(50, 50);
-	    emitter.minParticleScale = 0.1;
-	    emitter.maxParticleScale = 2;
-	    emitter.minParticleAlpha = 0.1;
-	    emitter.maxParticleAlpha = 0.6;
-	    emitter.gravity = 0;
-	    emitter.start(false, 2000, 0, 80);
-
-	    var brokenTileIndex;
+		//item used on dynamic tile	    
 	    if (typeof(tile.dynamicTile) !== 'undefined') {
 	    	console.log (tile.dynamicTile);
-			mapManager.map.putTile(tile.dynamicTile.params.brokenTileIndex, tile.x, tile.y, mapManager.dynamics);
+			game.mapManager.map.putTile(tile.dynamicTile.params.brokenTileIndex, tile.x, tile.y, mapManager.dynamics);
 	    }
+	    //item used on ground tile	    
 	    else {
-	    	mapManager.map.putTile(17, tile.x, tile.y, mapManager.ground);
+	    	
 	    }
-		
+
+	    //ground explosion sprite
+	    if (this.params.explosionSprite) {
+	    	var groundExplosion = game.add.sprite(tile.worldX + 12, 
+	    										  tile.worldY + 12, 
+	    										  this.params.explosionSprite);
+	    	groundExplosion.anchor.setTo(0.5);
+	    	groundExplosion.angle = 90 * game.rnd.integerInRange(0,3);
+	    	game.mapManager.groundEffectsGroup.add(groundExplosion);
+	    }
+	    
+		//camera shake
+		if (this.params.shakeOnExplode) {
+	    	game.cameraManager.shake();
+	    }
+
+	    //kill sprite
 		sprite.kill();
 	}
 };
@@ -76759,9 +76816,13 @@ MapManager = function(game) {
     this.map = null;
 
     //Layers
-    this.ground = null;
-    this.walls = null;
-    this.dynamics = null;
+    this.ground             = null;
+    this.groundEffectsGroup = null;
+    this.walls              = null;
+    this.dynamics           = null;
+    this.usedItemsGroup     = null;
+    this.playerGroup        = null;
+    this.effectsGroup       = null;
 };
  
 MapManager.prototype = {
@@ -76777,9 +76838,14 @@ MapManager.prototype = {
 	    this.map.addTilesetImage('tileset', 'tileset');
 	    this.map.addTilesetImage('dynamic', 'dynamic');
 
-	    this.ground = this.map.createLayer('ground');
-	    this.walls = this.map.createLayer('walls');    
-	    this.dynamics = this.map.createLayer('dynamic');
+        //layers ordering
+	    this.ground             = this.map.createLayer('ground');
+        this.groundEffectsGroup = this.game.add.group();
+	    this.walls              = this.map.createLayer('walls');    
+	    this.dynamics           = this.map.createLayer('dynamic');
+        this.usedItemsGroup     = this.game.add.group();
+        this.playerGroup        = this.game.add.group();
+        this.effectsGroup       = this.game.add.group();
 
 	    this.ground.resizeWorld();
 
@@ -76792,10 +76858,14 @@ MapManager.prototype = {
  
         
 	    
+    },
+
+    orderLayers: function() {
+
     }
  
 };
-Player = function(game) {
+PlayerManager = function(game) {
  
     this.game = game;
     this.sprite = null;
@@ -76810,7 +76880,7 @@ Player = function(game) {
  	this.rightKey = null;
 };
  
-Player.prototype = {
+PlayerManager.prototype = {
  
     preload: function () {
         this.game.load.spritesheet('player', 'assets/sprites/player.png', 48, 48, 7, 1, 2);
@@ -76819,6 +76889,8 @@ Player.prototype = {
     create: function () {
         this.sprite = this.game.add.sprite(100, 100, 'player');
 	    this.sprite.anchor.set(0.5);
+
+	    this.game.mapManager.playerGroup.add(this.sprite);
 
 	    this.game.physics.enable(this.sprite);
 	    this.sprite.body.setSize(22, 22, 0, 0);
@@ -76829,8 +76901,6 @@ Player.prototype = {
 	    this.downKey  = game.input.keyboard.addKey(Phaser.Keyboard.S);
 	    this.leftKey  = game.input.keyboard.addKey(Phaser.Keyboard.Q);
 	    this.rightKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
-
-	    this.game.camera.follow(this.sprite);
     },
  
     update: function() {
@@ -76886,14 +76956,12 @@ Player.prototype = {
 	    else if (!moving) {
 	        this.walkAnim.stop();
 	    }    
-	    this.sprite.bringToTop();
     }
  
 };
-WeaponsManager = function(game, mapManager) {
+WeaponsManager = function(game) {
  
     this.game = game;
-    this.mapManager = mapManager;
 
     this.items = null;
     this.itemUseList = [];
@@ -76907,7 +76975,8 @@ WeaponsManager.prototype = {
     preload: function () {
     	this.game.load.spritesheet('items', 'assets/tiles/items.png', 24, 24, 64, 1, 1);
         this.game.load.json('items_json', 'assets/datas/items.json');
-        game.load.spritesheet('explosion', 'assets/tiles/explosion.png', 48, 48, 16, 1, 1);
+        this.game.load.spritesheet('explosion', 'assets/tiles/explosion.png', 48, 48, 16, 1, 1);
+        this.game.load.image('groundExplosion', 'assets/sprites/groundExplosion.png');
     },
  
     create: function () {
@@ -76918,11 +76987,11 @@ WeaponsManager.prototype = {
     },
  
     useItemOnDynamicTile: function(dynamicTile) {
-        this.currentItem.useItem(game, mapManager, dynamicTile);
+        this.currentItem.useItem(game, dynamicTile);
     },
 
     useItemOnGroundTile: function(aimedTile) {
-        this.currentItem.useItem(game, mapManager, aimedTile);
+        this.currentItem.useItem(game, aimedTile);
     },
 
     constructItem: function (name) {
@@ -76942,10 +77011,11 @@ WeaponsManager.prototype = {
 // var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update, render: render });
 var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
 
+
 function preload() {
     
-    player = new Player(game);
-    player.preload();
+    playerManager = new PlayerManager(game);
+    playerManager.preload();
 
     mapManager = new MapManager(game);
     mapManager.preload();
@@ -76953,11 +77023,22 @@ function preload() {
     weaponsManager = new WeaponsManager(game);
     weaponsManager.preload();
 
-    aimManager = new AimManager(game, player, mapManager, weaponsManager);
+    aimManager = new AimManager(game);
     aimManager.preload();
 
-    dynamicTilesManager = new DynamicTilesManager(game, mapManager);
+    dynamicTilesManager = new DynamicTilesManager(game);
     dynamicTilesManager.preload();
+
+    cameraManager = new CameraManager(game);
+    cameraManager.preload();
+
+    game.playerManager       = playerManager;
+    game.mapManager          = mapManager;
+    game.weaponsManager      = weaponsManager;
+    game.aimManager          = aimManager;
+    game.dynamicTilesManager = dynamicTilesManager;
+    game.cameraManager       = cameraManager;
+
 }
 
 
@@ -76987,11 +77068,11 @@ var updateAiming_counter = {count: 0};
 function create() {
 
     mapManager.create();
-    player.create();
+    playerManager.create();
     aimManager.create();
     weaponsManager.create();
     dynamicTilesManager.create();
-    
+    cameraManager.create();
     
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -77009,17 +77090,21 @@ function create() {
 
 function update() {
     
-    game.physics.arcade.collide(player.sprite, mapManager.walls, function() {
+    game.physics.arcade.collide(playerManager.sprite, mapManager.walls, function() {
     });
-    game.physics.arcade.collide(player.sprite, mapManager.dynamics, function(player, tile) {
+    game.physics.arcade.collide(playerManager.sprite, mapManager.dynamics, function(playerManager, tile) {
         //tile.debug = true;
     });
-    player.update();
+    playerManager.update();
 
 
     oneInNFrame(2, updateAiming_counter, function() {
-        aimManager.updateAiming(player, mapManager);
+        aimManager.updateAiming(playerManager, mapManager);
     });
+
+    cameraManager.update();
+
+
 
     
 }
@@ -77027,8 +77112,8 @@ function update() {
 function render() {
     if (debugMode) {
         game.debug.text(toDebug, 600, 550);
-        game.debug.bodyInfo(player.sprite, 32, 32);
-        game.debug.body(player.sprite);
+        game.debug.bodyInfo(playerManager.sprite, 32, 32);
+        game.debug.body(playerManager.sprite);
         //game.debug.body(mapManager.dynamics);
         //game.debug.body(mapManager.walls);
 
@@ -77129,4 +77214,9 @@ function oneInNFrame(n, counter, callback) {
 	else {
 		counter.count++;
 	}
+}
+
+function randIntInterval(min,max)
+{
+    return Math.floor(Math.random()*(max-min+1)+min);
 }

@@ -1,9 +1,6 @@
-AimManager = function(game, player, mapManager, weaponManager) {
+AimManager = function(game) {
  
     this.game = game;
-    this.player = player;
-    this.mapManager = mapManager;
-    this.weaponManager = weaponManager;
 
     this.isFoundTile = false;
     this.aimedDynamicTile  = false;
@@ -38,7 +35,7 @@ AimManager.prototype = {
             wallsBlocking = false;
 
         
-        this.hoveredTile = this.mapManager.map.getTileWorldXY(game.input.worldX, game.input.worldY);
+        this.hoveredTile = this.game.mapManager.map.getTileWorldXY(game.input.worldX, game.input.worldY);
         this.hoveredTileWorldXCenter = this.hoveredTile.worldX + this.hoveredTile.centerX;
         this.hoveredTileWorldYCenter = this.hoveredTile.worldY + this.hoveredTile.centerY;
 
@@ -46,7 +43,7 @@ AimManager.prototype = {
         {
             if (this.checkWallsRayCast())
             {
-                var dynamicsHits = this.mapManager.dynamics.getRayCastTiles(this.ray, 1, true, false);
+                var dynamicsHits = this.game.mapManager.dynamics.getRayCastTiles(this.ray, 1, true, false);
                 if (dynamicsHits.length === 0)
                 {
                     //close ground tile aimed
@@ -87,26 +84,26 @@ AimManager.prototype = {
     click: function() {
         if (this.isFoundTile) {
             if (this.aimedDynamicTile) {
-                this.weaponManager.useItemOnDynamicTile(this.aimedTile);
+                this.game.weaponsManager.useItemOnDynamicTile(this.aimedTile);
             }
             else {
-                this.weaponManager.useItemOnGroundTile(this.aimedTile);
+                this.game.weaponsManager.useItemOnGroundTile(this.aimedTile);
             }
         }
     },
 
     hoveredTileCloseEnough: function() {
-        return this.game.physics.arcade.distanceToXY(this.player.sprite, this.hoveredTileWorldXCenter, this.hoveredTileWorldYCenter) < this.useRadius;
+        return this.game.physics.arcade.distanceToXY(this.game.playerManager.sprite, this.hoveredTileWorldXCenter, this.hoveredTileWorldYCenter) < this.useRadius;
     },
 
     checkWallsRayCast: function() {
-        this.ray = new Phaser.Line(this.player.sprite.x, this.player.sprite.y, this.hoveredTileWorldXCenter, this.hoveredTileWorldYCenter);
-        return (this.mapManager.walls.getRayCastTiles(this.ray, 1, true, false).length === 0);
+        this.ray = new Phaser.Line(this.game.playerManager.sprite.x, this.game.playerManager.sprite.y, this.hoveredTileWorldXCenter, this.hoveredTileWorldYCenter);
+        return (this.game.mapManager.walls.getRayCastTiles(this.ray, 1, true, false).length === 0);
     },
 
     getDynamicRayCast: function() {
-        this.ray = new Phaser.Line(this.player.sprite.x, this.player.sprite.y, game.input.worldX, game.input.worldY);
-        return this.mapManager.dynamics.getRayCastTiles(this.ray, 1, true, false);
+        this.ray = new Phaser.Line(this.game.playerManager.sprite.x, this.game.playerManager.sprite.y, game.input.worldX, game.input.worldY);
+        return this.game.mapManager.dynamics.getRayCastTiles(this.ray, 1, true, false);
     },
 
     getClosestTile: function(dynamicTilesHitsList) {
@@ -115,10 +112,10 @@ AimManager.prototype = {
 
         for (var i = 0; i < dynamicTilesHitsList.length; i++)
         {
-            this.ray.setTo(this.player.sprite.x, this.player.sprite.y, dynamicTilesHitsList[i].worldX + dynamicTilesHitsList[i].centerX, dynamicTilesHitsList[i].worldY + dynamicTilesHitsList[i].centerY); 
+            this.ray.setTo(this.game.playerManager.sprite.x, this.game.playerManager.sprite.y, dynamicTilesHitsList[i].worldX + dynamicTilesHitsList[i].centerX, dynamicTilesHitsList[i].worldY + dynamicTilesHitsList[i].centerY); 
             var tileDistance = this.ray.length;
             if (tileDistance < this.useRadius && tileDistance < closestDistance) {
-                var walls2ndCheck = this.mapManager.walls.getRayCastTiles(this.ray, 1, true, false);
+                var walls2ndCheck = this.game.mapManager.walls.getRayCastTiles(this.ray, 1, true, false);
                 if (walls2ndCheck.length === 0)
                 {
                     closest = dynamicTilesHitsList[i];

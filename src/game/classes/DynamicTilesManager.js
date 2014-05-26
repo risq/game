@@ -1,7 +1,6 @@
-DynamicTilesManager = function(game, mapManager) {
+DynamicTilesManager = function(game) {
  
     this.game = game;
-    this.mapManager = mapManager;
 
 	this.dynamicTiles = null;
 
@@ -15,7 +14,7 @@ DynamicTilesManager.prototype = {
     create: function () {
         this.dynamicTiles = this.game.cache.getJSON('dynamicTiles_json');
 
-        var tiles = this.mapManager.dynamics.getTiles(0,0, this.mapManager.map.heightInPixels, this.mapManager.map.widthInPixels);
+        var tiles = this.game.mapManager.dynamics.getTiles(0,0, this.game.mapManager.map.heightInPixels, this.game.mapManager.map.widthInPixels);
         for (var j = tiles.length - 1; j >= 0; j--) {
             if (tiles[j].index > -1)
                 tiles[j].dynamicTile = this.constructDynamicTile(tiles[j].index);

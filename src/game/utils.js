@@ -7,3 +7,8 @@ function oneInNFrame(n, counter, callback) {
 		counter.count++;
 	}
 }
+
+function randIntInterval(min,max)
+{
+    return Math.floor(Math.random()*(max-min+1)+min);
+}

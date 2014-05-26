@@ -4,9 +4,13 @@ MapManager = function(game) {
     this.map = null;
 
     //Layers
-    this.ground = null;
-    this.walls = null;
-    this.dynamics = null;
+    this.ground             = null;
+    this.groundEffectsGroup = null;
+    this.walls              = null;
+    this.dynamics           = null;
+    this.usedItemsGroup     = null;
+    this.playerGroup        = null;
+    this.effectsGroup       = null;
 };
  
 MapManager.prototype = {
@@ -22,9 +26,14 @@ MapManager.prototype = {
 	    this.map.addTilesetImage('tileset', 'tileset');
 	    this.map.addTilesetImage('dynamic', 'dynamic');
 
-	    this.ground = this.map.createLayer('ground');
-	    this.walls = this.map.createLayer('walls');    
-	    this.dynamics = this.map.createLayer('dynamic');
+        //layers ordering
+	    this.ground             = this.map.createLayer('ground');
+        this.groundEffectsGroup = this.game.add.group();
+	    this.walls              = this.map.createLayer('walls');    
+	    this.dynamics           = this.map.createLayer('dynamic');
+        this.usedItemsGroup     = this.game.add.group();
+        this.playerGroup        = this.game.add.group();
+        this.effectsGroup       = this.game.add.group();
 
 	    this.ground.resizeWorld();
 
@@ -37,6 +46,10 @@ MapManager.prototype = {
  
         
 	    
+    },
+
+    orderLayers: function() {
+
     }
  
 };

@@ -1,7 +1,6 @@
-WeaponsManager = function(game, mapManager) {
+WeaponsManager = function(game) {
  
     this.game = game;
-    this.mapManager = mapManager;
 
     this.items = null;
     this.itemUseList = [];
@@ -15,7 +14,8 @@ WeaponsManager.prototype = {
     preload: function () {
     	this.game.load.spritesheet('items', 'assets/tiles/items.png', 24, 24, 64, 1, 1);
         this.game.load.json('items_json', 'assets/datas/items.json');
-        game.load.spritesheet('explosion', 'assets/tiles/explosion.png', 48, 48, 16, 1, 1);
+        this.game.load.spritesheet('explosion', 'assets/tiles/explosion.png', 48, 48, 16, 1, 1);
+        this.game.load.image('groundExplosion', 'assets/sprites/groundExplosion.png');
     },
  
     create: function () {
@@ -26,11 +26,11 @@ WeaponsManager.prototype = {
     },
  
     useItemOnDynamicTile: function(dynamicTile) {
-        this.currentItem.useItem(game, mapManager, dynamicTile);
+        this.currentItem.useItem(game, dynamicTile);
     },
 
     useItemOnGroundTile: function(aimedTile) {
-        this.currentItem.useItem(game, mapManager, aimedTile);
+        this.currentItem.useItem(game, aimedTile);
     },
 
     constructItem: function (name) {
